@@ -13,7 +13,7 @@ public class Course {
     private String courseName;
     private String courseDescription;
     @OneToMany(mappedBy = "course")
-    private Set<Enrollment> students = new HashSet<>();
+    private Set<Enrollment> students;
 
 
     public int getCourseID() {

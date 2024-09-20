@@ -7,17 +7,22 @@ import be.ipam.student.repository.CourseRepository;
 import be.ipam.student.repository.EnrollmentRepository;
 import be.ipam.student.repository.StudentRepository;
 import be.ipam.student.service.CourseService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 import java.util.Set;
+import org.hibernate.Hibernate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@Transactional
 class StudentApplicationTests {
 
     @Autowired
@@ -30,37 +35,47 @@ class StudentApplicationTests {
     @Autowired
     private CourseService courseService;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
+
     @Test
     @Transactional
-    void testWalkingStudent(){
+    void testWalkingStudent() {
         Student student = new Student();
         student.setFirstName("Luigi");
         student.setLastName("Bros");
-        student.setMail("luigi4@nitendo.be");
+        student.setMail("luigi7@nitendo.be");
         student = studentRepository.save(student);
 
         Course course = new Course();
         course.setCourseName("C++");
         course.setCourseDescription("C++ programming");
-        course = courseRepository.saveAndFlush(course);
+        course = courseRepository.save(course);
 
         Enrollment enrollment = new Enrollment();
         enrollment.setStudent(student);
         enrollment.setCourse(course);
-        enrollment = enrollmentRepository.saveAndFlush(enrollment);
+        enrollmentRepository.saveAndFlush(enrollment);
 
-        student.getEnrollments().add(enrollment);
-        student = studentRepository.saveAndFlush(student);
+        // JPA ne met pas à jour l'objet et utilise la version en cache
+        // où l'enrollment n'est pas setté
+        // on utilise donc le entityManager pour rafraichir l'objet
+        // il faut rajouter le @PersistenceContext ligne 38
+        entityManager.refresh(student);
 
         student = studentRepository.findById(student.getStudentID()).get();
 
         Set<Enrollment> enrollments = student.getEnrollments();
+        System.out.println(student.getFirstName() + " " + student.getLastName() + " est inscrit à ");
 
-        System.out.println(student.getFirstName() + " " + student.getLastName() + " est inscrit");
         enrollments.forEach(enroll -> {
             System.out.println(enroll.getCourse().getCourseName());
         });
     }
+
+
+
 
 
 
@@ -84,6 +99,7 @@ class StudentApplicationTests {
     }
 
     @Test
+    @Transactional
     void testReadCourse() {
     Student student = studentRepository.findById(2009).get();
     student.getEnrollments().forEach(enrollment -> {

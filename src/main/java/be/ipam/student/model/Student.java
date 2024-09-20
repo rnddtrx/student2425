@@ -18,7 +18,7 @@ public class Student {
     private String mail;
     private String passwordHash;
     @OneToMany(mappedBy = "student")
-    private Set<Enrollment> enrollments = new HashSet<>();
+    private Set<Enrollment> enrollments;
 
 
     public int getStudentID() {
