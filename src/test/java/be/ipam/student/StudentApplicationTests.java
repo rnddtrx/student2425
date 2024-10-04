@@ -1,5 +1,6 @@
 package be.ipam.student;
 
+import be.ipam.student.model.Address;
 import be.ipam.student.model.Enrollment;
 import be.ipam.student.model.Student;
 import be.ipam.student.model.Course;
@@ -22,7 +23,6 @@ import org.hibernate.Hibernate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-@Transactional
 class StudentApplicationTests {
 
     @Autowired
@@ -106,6 +106,24 @@ class StudentApplicationTests {
         System.out.println(enrollment.getCourse().getCourseName());
     });
 
+    }
+
+    @Test
+    void testAddStudentWithAddress() {
+        Student student = new Student();
+        student.setFirstName("Zelda");
+        student.setLastName("TheLegend");
+        student.setMail("zela2@nintendo.com");
+        Address address = new Address();
+        address.setCity("Hyrule");
+        address.setNumber("2");
+        address.setPostalCode("1234");
+        address.setStreet("Castle");
+        student.setAddress(address);
+        address.setStudent(student);
+        student = studentRepository.save(student);
+        studentRepository.findById(student.getStudentID());
+        assertEquals("Hyrule", student.getAddress().getCity());
     }
 
 }

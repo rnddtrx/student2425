@@ -20,7 +20,6 @@ public class Student {
     @OneToMany(mappedBy = "student")
     private Set<Enrollment> enrollments;
 
-
     public int getStudentID() {
         return studentID;
     }

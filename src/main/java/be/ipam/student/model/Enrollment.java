@@ -1,5 +1,6 @@
 package be.ipam.student.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ public class Enrollment {
     private int enrollmentID;
     @ManyToOne
     @JoinColumn(name = "studentID")
+    @JsonIgnore
     private Student student;
     @ManyToOne
     @JoinColumn(name = "courseID")
