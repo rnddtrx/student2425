@@ -66,8 +66,8 @@ public class CourseController {
     }
 
     @GetMapping("/name/{courseName}")
-    public ResponseEntity<Course> findCourseByName(@PathVariable String courseName){
-        Optional<Course> course = courseService.getCourseByName(courseName);
+    public ResponseEntity<CourseDto> findCourseByName(@PathVariable String courseName){
+        Optional<CourseDto> course = courseService.getCourseByName(courseName);
         return course.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

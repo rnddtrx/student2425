@@ -2,6 +2,8 @@ package be.ipam.student.service;
 
 import be.ipam.student.dto.CourseDto;
 import be.ipam.student.dto.CourseFullDto;
+import be.ipam.student.dto.StudentDto;
+import be.ipam.student.dto.StudentFullDto;
 import be.ipam.student.mapper.CourseFullMapper;
 import be.ipam.student.model.Course;
 import be.ipam.student.mapper.CourseMapper;
@@ -33,8 +35,9 @@ public class CourseService {
         return course.map(courseFullMapper::toDto);
     }
 
-    public Optional<Course> getCourseByName(String courseName){
-        return courseRepository.findByCourseName(courseName);
+    public Optional<CourseDto> getCourseByName(String courseName){
+        Optional<Course> course = courseRepository.findByCourseName(courseName);
+        return course.map(courseMapper::toDto);
     }
 
     public CourseDto createCourse(CourseDto courseDto) {
