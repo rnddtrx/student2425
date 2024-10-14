@@ -7,6 +7,7 @@ import be.ipam.student.mapper.StudentMapper;
 import be.ipam.student.model.Student;
 import be.ipam.student.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,6 +20,9 @@ public class StudentService {
     private StudentMapper studentMapper;
     @Autowired
     private StudentFullMapper studentFullMapper;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     //Read student by id
     public Optional<StudentDto> getStudentById(int studentID) {
@@ -33,6 +37,7 @@ public class StudentService {
     //Create student
     public StudentDto createStudent(StudentDto studentDto) {
         Student student = studentMapper.toEntity(studentDto);
+        student.setPasswordHash(passwordEncoder.encode(student.getPasswordHash()));
         student = studentRepository.save(student);
         return studentMapper.toDto(student);
     }
@@ -54,5 +59,11 @@ public class StudentService {
             return Optional.of(studentMapper.toDto(studentToUpdate));
         }
         return Optional.empty();
+    }
+
+    //to find student by mail in security
+    public Optional<Student> findByMail(String mail)
+    {
+        return studentRepository.findByMail(mail);
     }
 }
