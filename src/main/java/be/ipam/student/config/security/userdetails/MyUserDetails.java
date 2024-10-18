@@ -1,4 +1,4 @@
-package be.ipam.student.config.security;
+package be.ipam.student.config.security.userdetails;
 
 import java.util.ArrayList;
 import java.util.Collection;

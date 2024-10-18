@@ -22,29 +22,32 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
+//Le filtre va intercepter les requêtes entrantes et vérifier la validité du token JWT dans l'en-tête Authorization
 public class JwtTokenAuthorizationOncePerRequestFilter extends OncePerRequestFilter {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private UserDetailsService jwtInMemoryUserDetailsService;
-    
-    @Autowired
     private JwtTokenUtil jwtTokenUtil;
-    
-    //@Value("${jwt.http.request.header}")
+    @Autowired
+    private UserDetailsService userDetailsService;
 
+    //@Value("${jwt.http.request.header}")
     @Value("Authorization")
     private String tokenHeader;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+
         logger.debug("Authentication Request For '{}'", request.getRequestURL());
 
         final String requestTokenHeader = request.getHeader(this.tokenHeader);
-
         String username = null;
         String jwtToken = null;
+
+        // JWT Token is in the form "Bearer token".
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
             try {
@@ -57,12 +60,12 @@ public class JwtTokenAuthorizationOncePerRequestFilter extends OncePerRequestFil
         } else {
             logger.warn("JWT_TOKEN_DOES_NOT_START_WITH_BEARER_STRING");
         }
-        
-        
-        logger.warn("JWT_TOKEN_USERNAME_VALUE '{}'", username);
+
+        // username est présent, mais l'authentification n'est pas encore effectuée
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = this.jwtInMemoryUserDetailsService.loadUserByUsername(username);
+            // On charge les détails de l'utilisateur : username, password, roles
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

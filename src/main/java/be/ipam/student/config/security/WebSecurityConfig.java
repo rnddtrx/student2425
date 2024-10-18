@@ -1,5 +1,6 @@
 package be.ipam.student.config.security;
 
+import be.ipam.student.config.security.userdetails.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
+//Activer la sécurité web
 @EnableWebSecurity()
 @EnableMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig {
@@ -29,15 +31,17 @@ public class WebSecurityConfig {
     //USER DETAIL SERVICE
     @Autowired
     private MyUserDetailsService uds;
-
-    //BCrypt
+    //-- BCrypt Password Encoder
     @Autowired
     private BCryptPasswordEncoder encoder;
 
-    //1. Publish a SecurityFilterChain Bean
+    //-- 1. SecurityFilterChain Bean
     @Bean
     protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
+                .cors(AbstractHttpConfigurer::disable) // Disable CORS
+                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(
                         authorizeRequests -> authorizeRequests
                                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
@@ -48,16 +52,10 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/authenticate").permitAll()
                                 .requestMatchers("/api/**").authenticated()
                                 .requestMatchers("/**").authenticated()
-                ).csrf(AbstractHttpConfigurer::disable);
-
-        httpSecurity.cors(AbstractHttpConfigurer::disable);
-
-        httpSecurity
-                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+                                .anyRequest().authenticated()
+                );
         return httpSecurity.build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -71,7 +69,6 @@ public class WebSecurityConfig {
 
         return source;
     }
-
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {

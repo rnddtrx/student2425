@@ -1,4 +1,4 @@
-package be.ipam.student.config.security;
+package be.ipam.student.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

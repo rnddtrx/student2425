@@ -4,6 +4,7 @@ package be.ipam.student.controller.security;
 import java.util.Objects;
 
 import be.ipam.student.config.security.*;
+import be.ipam.student.config.security.userdetails.MyUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -24,34 +25,24 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class AuthenticationController {
-	
-  private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
-  //@Value("${jwt.http.request.header}")
   @Value("Authorization")
   private String tokenHeader;
-
   @Autowired
   private AuthenticationManager authenticationManager;
-
   @Autowired
   private JwtTokenUtil jwtTokenUtil;
-
   @Autowired
-  private UserDetailsService jwtInMemoryUserDetailsService;
+  private UserDetailsService userDetailsService;
 
   //Methode du controller pour recevoir un token (Adresse jwt.get.token.uri dans application properties)
   //@RequestMapping(value = "${jwt.get.token.uri}", method = RequestMethod.POST)
   @PostMapping(value = "/api/authenticate")
   public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtTokenRequest authenticationRequest)
       throws AuthenticationException {
-	  
-    authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-
-    final UserDetails userDetails = jwtInMemoryUserDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-
+    Authentication auth = authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
+    final MyUserDetails userDetails = (MyUserDetails) auth.getPrincipal(); //userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
     final String token = jwtTokenUtil.generateToken(userDetails);
-
     return ResponseEntity.ok(new JwtTokenResponse(token));
   }
 
@@ -62,8 +53,7 @@ public class AuthenticationController {
     String authToken = request.getHeader(tokenHeader);
     final String token = authToken.substring(7);
     String username = jwtTokenUtil.getUsernameFromToken(token);
-    MyUserDetails user = (MyUserDetails) jwtInMemoryUserDetailsService.loadUserByUsername(username);
-
+    MyUserDetails user = (MyUserDetails) userDetailsService.loadUserByUsername(username);
     if (jwtTokenUtil.canTokenBeRefreshed(token)) {
       String refreshedToken = jwtTokenUtil.refreshToken(token);
       return ResponseEntity.ok(new JwtTokenResponse(refreshedToken));
@@ -79,20 +69,17 @@ public class AuthenticationController {
   }
 
   //Methode d'authentification appelée dans createAuthenticationToken
-  private void authenticate(String username, String password) {
+  private Authentication authenticate(String username, String password) {
     Objects.requireNonNull(username);
     Objects.requireNonNull(password);
-
     try {
-      log.warn("/!\\ Start");
-      Authentication au =authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-      log.warn("/!\\ "+au.getName());
-    
+      return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
     } catch (DisabledException e) {
       throw new AuthenticationException("USER_DISABLED", e);
     } catch (BadCredentialsException e) {
       throw new AuthenticationException("INVALID_CREDENTIALS", e);
     }
   }
+
 }
 

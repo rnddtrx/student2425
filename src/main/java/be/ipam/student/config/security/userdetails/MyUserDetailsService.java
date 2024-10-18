@@ -1,4 +1,4 @@
-package be.ipam.student.config.security;
+package be.ipam.student.config.security.userdetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,6 @@ public class MyUserDetailsService implements UserDetailsService {
   @Autowired
   StudentService studentService;
 
-
   @Override
   @Transactional
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -33,19 +32,16 @@ public class MyUserDetailsService implements UserDetailsService {
 	  //Ici normalement je récupère le user selon le paramètre login
 	  Optional<Student> studentEntity = studentService.findByMail(username);
 
-
 	  if(studentEntity.isPresent()) {
 		  Student se = studentEntity.get();
 		  log.info("FOUND " + se.getFirstName());
 		  List<String> rolelist = new ArrayList<String>();
 		  //se.getRoles().forEach(r -> rolelist.add("ROLE_"+r.getName().toUpperCase()));
 		  rolelist.add("ROLE_STUDENT");
-
+		  rolelist.add("ADMIN");
 		  //Ici je crée un user spring sur base de mon Student
 		  user = Optional.of(new MyUserDetails(se.getMail(),se.getPasswordHash(),rolelist));
-
 	  }
-
 
 	  if (user.isEmpty()) {
 		  throw new UsernameNotFoundException(String.format("USER_NOT_FOUND '%s'.", username));
