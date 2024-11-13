@@ -17,4 +17,5 @@ public class StudentFullDto implements Serializable {
     Date birthDate;
     String mail;
     Set<EnrollmentWithCourseDto> enrollments;
+    Set<RoleDto> roles;
 }

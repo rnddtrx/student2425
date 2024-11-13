@@ -17,4 +17,5 @@ public class StudentDto implements Serializable {
     Date birthDate;
     String mail;
     String passwordHash;
+    Set<RoleDto> roles;
 }

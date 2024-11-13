@@ -25,9 +25,12 @@ public class MyUserDetails implements UserDetails {
     this.password = password;
 
     List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
-    for(String r:roles) {
-    	authorities.add(new SimpleGrantedAuthority(r));
-    }
+
+    //for(String r:roles) {
+    //	authorities.add(new SimpleGrantedAuthority(r));
+    //}
+
+    roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
 
     this.authorities = authorities;
   }

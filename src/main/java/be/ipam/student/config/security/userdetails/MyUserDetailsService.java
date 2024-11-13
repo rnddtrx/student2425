@@ -33,12 +33,13 @@ public class MyUserDetailsService implements UserDetailsService {
 	  Optional<Student> studentEntity = studentService.findByMail(username);
 
 	  if(studentEntity.isPresent()) {
+		  //Je récupère le student
 		  Student se = studentEntity.get();
-		  log.info("FOUND " + se.getFirstName());
+		  //Je crée une liste de roles vide
 		  List<String> rolelist = new ArrayList<String>();
-		  //se.getRoles().forEach(r -> rolelist.add("ROLE_"+r.getName().toUpperCase()));
-		  rolelist.add("ROLE_STUDENT");
-		  rolelist.add("ADMIN");
+		  //Je récupère les roles du student et je les ajoute à la liste sous forme de string
+		  se.getRoles().forEach(role -> rolelist.add(role.getRoleName().toUpperCase()));
+
 		  //Ici je crée un user spring sur base de mon Student
 		  user = Optional.of(new MyUserDetails(se.getMail(),se.getPasswordHash(),rolelist));
 	  }
